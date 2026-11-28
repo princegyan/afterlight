@@ -37,10 +37,16 @@ const icon = (name,cls='') => `<svg class="icon ${cls}" viewBox="0 0 24 24" fill
 const pill = (text,type='') => `<span class="pill ${type || slug(text)}">${esc(text)}</span>`;
 const button = (action,label,kind='secondary',extra='') => `<button class="btn ${kind}" data-action="${action}" ${extra}>${label}</button>`;
 function toast(text) { clearTimeout(toastTimer); toastNode.textContent=text;toastNode.classList.add('show');toastTimer=setTimeout(()=>toastNode.classList.remove('show'),5000); }
+let browserExercise;
 async function api(path,body) {
+  if (browserExercise) return browserExercise(path,body);
   const response=await fetch(path,{method:body===undefined?'GET':'POST',headers:{...(body===undefined?{}:{'Content-Type':'application/json'}),...(token?{Authorization:`Bearer ${token}`}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})});
   const result=await response.json();
   if (!response.ok) { const error=new Error(result.error || 'Request failed.');error.status=response.status;throw error; }
+  if (path === '/api/state' && result.storageMode === 'browser') {
+    ({judgeRequest:browserExercise} = await import('/exercise/judge-store.mjs'));
+    return browserExercise(path,body);
+  }
   return result;
 }
 async function refresh() { data=await api('/api/state');if (!data.incidents.some(i=>i.id===selected)) selected=data.incidents.find(i=>i.status==='Needs review')?.id || data.incidents[0]?.id;render(); }
@@ -52,7 +58,7 @@ function shell(content) {
     <nav aria-label="Main navigation">${navItem('operations','Overview','grid')}${navItem('map','Incident map','map')}${navItem('duplicates','Duplicate review','layers',pendingPairs().length)}${navItem('reports','Situation reports','report')}${navItem('activity','Activity log','activity')}<span class="mobile-settings">${navItem('settings','Exercise settings','settings')}</span></nav>
     <div class="sidebar-bottom"><div class="exercise-note"><span class="little-star">✦</span><strong>Built for clarity.</strong><p>AI organizes the information.<br>You make the decisions.</p></div>${navItem('settings','Exercise settings','settings')}<div class="reviewer-avatar"><span>DR</span><div><strong>Demo reviewer</strong><small>Harborlight exercise</small></div><span class="online-dot"></span></div></div>
   </aside>
-  <div class="main-shell"><header class="topbar"><div class="breadcrumb"><span class="crumb-icon">${icon('layers')}</span><span>Workspace</span><span class="crumb-slash">/</span><strong>Harborlight</strong></div><div class="topbar-right">${pill('Simulation','simulation')}<span class="topbar-date">${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}</span></div></header>
+  <div class="main-shell"><header class="topbar"><div class="breadcrumb"><span class="crumb-icon">${icon('layers')}</span><span>Workspace</span><span class="crumb-slash">/</span><strong>Harborlight</strong></div><div class="topbar-right">${pill(data.storageMode==='browser'?'Saved in this browser · Simulation':'Simulation','simulation')}<span class="topbar-date">${new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}</span></div></header>
   <main id="main" tabindex="-1">${content}</main><footer class="app-footer"><span><span class="online-dot"></span> Fictional data · Human review required</span><span>Afterlight / Preparedness, with perspective.</span></footer></div>`;
 }
 function heading(kicker,title,subtitle,actions='') { return `<section class="page-heading"><div><div class="eyebrow">${kicker}</div><h1>${title}</h1><p>${subtitle}</p></div><div class="heading-actions">${actions}</div></section>`; }

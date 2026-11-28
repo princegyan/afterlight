@@ -38,13 +38,13 @@ The key design challenge is making unknown facts visible instead of filling them
 
 Afterlight is a fictional preparedness prototype. It does not dispatch emergency services, verify images or incidents, or provide operational response advice. Its priorities are review suggestions. The activity log is not tamper-proof. A production version would need a transactional database, access controls, deeper validation, and user research.
 
-Before submitting: deploy a persistent service, publish the licensed source with Kiro evidence, and publish the public demo. If demonstrating a live model, validate that provider separately.
+The Vercel judge exercise uses rule-based extraction and saves each judge's work in their browser by default. A shared Vercel deployment can use Redis and a private judge token.
 
-## URLs still required
+## Judge links
 
-- Public application: **not deployed**
-- Public GitHub repository: **not published**
-- Public YouTube demonstration: **local 2:06 video completed; not published**
-- Judge access instructions/token: **set when hosting**
+- [Vercel application](https://afterlight-woad-three.vercel.app/)
+- [Public GitHub repository](https://github.com/princegyan/afterlight) and [Kiro contribution](https://github.com/princegyan/afterlight/blob/main/docs/KIRO_CONTRIBUTION.md)
+- Public YouTube demonstration: add the public watch URL after upload.
+- Judge access: use the same browser to resume an exercise. Provide a token privately if access control is enabled.
 
 This draft is not ready to submit until the required public links, judge access, and final participant checks are complete.

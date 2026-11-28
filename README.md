@@ -56,6 +56,10 @@ The browser uses locally vendored Leaflet and loads real OpenStreetMap tiles ove
 
 ## Hosting
 
+The Vercel deployment serves the UI as static assets and routes API requests to a Node function. With no Redis integration, each judge gets a separate Harborlight exercise saved in that browser's IndexedDB. Reloading keeps edits. Clearing site data removes that browser's exercise. This mode uses the rule-based parser.
+
+For a shared exercise on Vercel, connect an Upstash Redis database and set `DEMO_ACCESS_TOKEN` on the project. Afterlight accepts the integration's `KV_REST_API_URL` and `KV_REST_API_TOKEN` or the equivalent `UPSTASH_REDIS_REST_*` variables. Redeploy after configuring them. Provide the demo token privately to judges. This mode also supports the optional server-side AI settings above. Production and preview deployments should use separate databases when enabling shared storage.
+
 Use a **single persistent Node service** on a container/PaaS host. Set `HOST=0.0.0.0`, a strong `DEMO_ACCESS_TOKEN`, and a writable `DATA_DIR` backed by persistent storage. Terminate HTTPS at the host. Judges enter the demo token in the UI; include it privately in Devpost. Keep the same service available for the judging period. Do not place this file-backed store on ephemeral or horizontally scaled serverless instances.
 
 ```powershell
@@ -63,11 +67,11 @@ docker build -t afterlight .
 docker run --rm -p 4173:4173 -e DEMO_ACCESS_TOKEN="replace-with-a-long-random-token" -v afterlight-data:/app/data afterlight
 ```
 
-The Docker image and public hosting have not been run here. A public GitHub repository and app URL are still required for submission. The local preview is not a public deployment.
+The Docker image targets a single service with a mounted volume. [Public repository](https://github.com/princegyan/afterlight) · [Vercel application](https://afterlight-woad-three.vercel.app/)
 
 ## Kiro and hackathon status
 
-**The initial prototype was built in Codex. Kiro IDE refined the specs and implemented reviewer-owned affected-people and needs corrections on November 21, 2026.** Kiro added validation, persistence/retry/provenance tests, and a contribution record. Codex independently reviewed and corrected that work. See `docs/KIRO_CONTRIBUTION.md`, `docs/CODEX_REVIEW.md`, and `docs/KIRO_HANDOFF.md` for attribution and evidence. The final test suite has 55 passing tests. Public hosting, repository, YouTube video, and Devpost submission remain pending; judges decide whether the extent of Kiro use satisfies the rules.
+**The initial prototype was built in Codex. Kiro IDE refined the specs and implemented reviewer-owned affected-people and needs corrections on November 21, 2026.** Kiro added validation and tests for persistence, retry, and provenance. Codex independently reviewed that work and later added Vercel support and parser regressions for bottled-water deliveries and restored power. See [Kiro's contribution](docs/KIRO_CONTRIBUTION.md) and [the independent review](docs/CODEX_REVIEW.md).
 
 See `docs/HACKATHON_REVIEW.md` for verified dates, fit, and outstanding requirements; `docs/SUBMISSION_DRAFT.md` for an editable pitch; and `docs/DEMO_SCRIPT.md` for a 2:50 recording outline.
 

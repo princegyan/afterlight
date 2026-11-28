@@ -30,6 +30,30 @@ test('priority rubric is explainable and avoids simple negated claims', () => {
   assert.equal(prioritySuggestion({...base,summary:'Blankets available. No power issues.',affectedPeople:null}).band,'Low');
   assert.equal(prioritySuggestion({...base,summary:'Water reported nearby.',affectedPeople:null}).band,'Moderate');
 });
+test('bottled water delivered during the exercise is supplies with no outstanding need', () => {
+  const text = 'Bottled water arrived at the community hall for the exercise.';
+  const extraction = demoExtraction({text});
+  assert.equal(extraction.category, 'Supplies');
+  assert.deepEqual(extraction.needs, []);
+  assert.equal(prioritySuggestion(extraction).band, 'Low');
+});
+test('restored power is not an active disruption', () => {
+  const extraction = demoExtraction({text:'Power has been restored. All services are operating normally.'});
+  assert.deepEqual(extraction.needs, []);
+  assert.equal(prioritySuggestion(extraction).band, 'Low');
+});
+test('a delivery or restoration does not hide a separate hazard or request', () => {
+  const mixed = demoExtraction({text:'Bottled water arrived. Water is rising at the hall. Power is back, but a power outage continues at the school.'});
+  assert.equal(mixed.category, 'Flooding');
+  assert.ok(mixed.needs.includes('Power disruption mentioned'));
+  assert.equal(prioritySuggestion(mixed).band, 'Moderate');
+  for (const text of ['Power has not been restored.', 'Power may be restored tomorrow.']) {
+    assert.ok(demoExtraction({text}).needs.includes('Power disruption mentioned'));
+  }
+  const request = demoExtraction({text:'We still need bottled water for the exercise.'});
+  assert.equal(request.category, 'Supplies');
+  assert.ok(request.needs.length > 0);
+});
 test('reviews preserve raw source and record the actual previous human edit', () => {
   const incident=createSeed().incidents[0], source=incident.report.text, original=incident.extraction.title;
   const body={title:'Reviewed title one',summary:'First reviewed summary.',category:'Flooding',status:'Reviewed',priority:'Moderate',locationId:'northgate',actor:'Reviewer',note:'Count remains unknown.'};
